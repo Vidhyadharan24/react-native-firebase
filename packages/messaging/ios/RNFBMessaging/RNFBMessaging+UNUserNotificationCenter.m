@@ -64,6 +64,12 @@ struct {
 }
 
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler {
+  if (_originalDelegate != nil && originalDelegateRespondsTo.willPresentNotification) {
+    [_originalDelegate userNotificationCenter:center willPresentNotification:notification withCompletionHandler:completionHandler];
+  } else {
+    completionHandler(UNNotificationPresentationOptionNone);
+  }
+
   if (notification.request.content.userInfo[@"gcm.message_id"]) {
     NSDictionary *notificationDict = [RNFBMessagingSerializer notificationToDict:notification];
 
@@ -74,12 +80,6 @@ struct {
     }
 
     // TODO in a later version allow customising completion options in JS code
-    completionHandler(UNNotificationPresentationOptionNone);
-  }
-
-  if (_originalDelegate != nil && originalDelegateRespondsTo.willPresentNotification) {
-    [_originalDelegate userNotificationCenter:center willPresentNotification:notification withCompletionHandler:completionHandler];
-  } else {
     completionHandler(UNNotificationPresentationOptionNone);
   }
 }
